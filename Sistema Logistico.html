@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogixPro — Plataforma Logística Enterprise</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0d12;
+  --bg2: #111520;
+  --bg3: #171d2b;
+  --bg4: #1e2638;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8892a4;
+  --text3: #556070;
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --sidebar-w: 240px;
+}
+[data-theme="light"] {
+  --bg: #f0f2f7;
+  --bg2: #ffffff;
+  --bg3: #f8f9fc;
+  --bg4: #eef0f6;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.12);
+  --text: #1a202c;
+  --text2: #4a5568;
+  --text3: #a0aec0;
+  --accent: #2563eb;
+  --accent2: #3b82f6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+
+/* LOGIN */
+#login-screen {
+  position:fixed; inset:0; background:var(--bg); z-index:1000;
+  display:flex; align-items:center; justify-content:center;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%);
+}
+.login-card {
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:20px; padding:48px; width:420px;
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.1), 0 40px 80px rgba(0,0,0,0.4);
+}
+.login-logo { display:flex; align-items:center; gap:12px; margin-bottom:36px; }
+.logo-icon { width:40px; height:40px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.login-logo h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.login-logo span { color:var(--accent2); }
+.login-sub { color:var(--text2); font-size:13px; margin-bottom:32px; line-height:1.6; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:12px; font-weight:500; color:var(--text2); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
+.form-group input {
+  width:100%; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:10px; padding:12px 16px; color:var(--text); font-family:'Sora',sans-serif;
+  font-size:14px; outline:none; transition:border-color 0.2s;
+}
+.form-group input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(59,130,246,0.15); }
+.btn-login {
+  width:100%; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff;
+  border:none; border-radius:10px; padding:14px; font-family:'Sora',sans-serif;
+  font-size:14px; font-weight:600; cursor:pointer; margin-top:8px;
+  transition:transform 0.15s, box-shadow 0.15s;
+}
+.btn-login:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(59,130,246,0.35); }
+.login-hint { text-align:center; margin-top:20px; font-size:12px; color:var(--text3); }
+.login-hint code { color:var(--accent2); background:rgba(59,130,246,0.1); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; }
+
+/* APP LAYOUT */
+#app { display:flex; height:100vh; overflow:hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width:var(--sidebar-w); background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; transition:width 0.3s; flex-shrink:0; overflow:hidden;
+}
+.sidebar.collapsed { width:64px; }
+.sidebar-header {
+  padding:20px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
+  min-height:64px;
+}
+.sidebar-logo { display:flex; align-items:center; gap:10px; overflow:hidden; }
+.sidebar-logo .logo-mark { width:32px; height:32px; background:linear-gradient(135deg,#3b82f6,#8b5cf6); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.sidebar-logo .logo-text { font-size:15px; font-weight:700; white-space:nowrap; }
+.sidebar-logo .logo-text span { color:var(--accent2); }
+.collapse-btn {
+  margin-left:auto; background:none; border:none; color:var(--text2); cursor:pointer;
+  padding:4px; border-radius:6px; transition:background 0.2s; flex-shrink:0;
+}
+.collapse-btn:hover { background:var(--bg3); }
+.sidebar-nav { flex:1; padding:12px 8px; overflow-y:auto; }
+.nav-section { margin-bottom:20px; }
+.nav-section-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text3); padding:0 8px; margin-bottom:8px; white-space:nowrap; overflow:hidden; }
+.nav-item {
+  display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:8px;
+  cursor:pointer; transition:all 0.15s; position:relative; white-space:nowrap;
+}
+.nav-item:hover { background:var(--bg3); }
+.nav-item.active { background:rgba(59,130,246,0.12); color:var(--accent2); }
+.nav-item.active .nav-icon { color:var(--accent2); }
+.nav-icon { font-size:18px; flex-shrink:0; color:var(--text2); transition:color 0.15s; }
+.nav-label { font-size:13px; font-weight:500; overflow:hidden; transition:opacity 0.2s; }
+.sidebar.collapsed .nav-label { opacity:0; pointer-events:none; }
+.sidebar.collapsed .nav-section-title { opacity:0; }
+.nav-badge { background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:10px; margin-left:auto; }
+.sidebar-footer { padding:12px 8px; border-top:1px solid var(--border); }
+.user-profile { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; }
+.user-avatar { width:32px; height:32px; background:linear-gradient(135deg,#10b981,#3b82f6); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.user-info { overflow:hidden; }
+.user-name { font-size:13px; font-weight:600; white-space:nowrap; }
+.user-role { font-size:11px; color:var(--text2); white-space:nowrap; }
+
+/* MAIN */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+
+/* TOPBAR */
+.topbar {
+  height:64px; background:var(--bg2); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; gap:16px; flex-shrink:0;
+}
+.topbar-title { font-size:16px; font-weight:600; flex:1; }
+.topbar-search {
+  display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:8px; padding:8px 14px; width:240px;
+}
+.topbar-search input { background:none; border:none; outline:none; color:var(--text); font-family:'Sora',sans-serif; font-size:13px; width:100%; }
+.topbar-search input::placeholder { color:var(--text3); }
+.icon-btn { width:36px; height:36px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s; font-size:16px; }
+.icon-btn:hover { background:var(--bg4); border-color:var(--border2); }
+.notif-dot { position:relative; }
+.notif-dot::after { content:''; position:absolute; top:4px; right:4px; width:7px; height:7px; background:var(--red); border-radius:50%; border:2px solid var(--bg2); }
+.theme-btn { font-size:16px; }
+
+/* CONTENT */
+.content { flex:1; overflow-y:auto; padding:28px; }
+
+/* PAGES */
+.page { display:none; }
+.page.active { display:block; }
+
+/* CARDS */
+.card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:14px;
+  padding:20px; transition:border-color 0.2s;
+}
+.card:hover { border-color:var(--border2); }
+.card-title { font-size:13px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:16px; }
+
+/* GRID */
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:24px; }
+
+/* KPI CARD */
+.kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px; position:relative; overflow:hidden; }
+.kpi-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:0.06; }
+.kpi-card.blue::before { background:var(--accent); }
+.kpi-card.green::before { background:var(--green); }
+.kpi-card.yellow::before { background:var(--yellow); }
+.kpi-card.purple::before { background:var(--purple); }
+.kpi-label { font-size:12px; color:var(--text2); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; }
+.kpi-value { font-size:28px; font-weight:700; letter-spacing:-1px; margin-bottom:8px; }
+.kpi-change { font-size:12px; display:flex; align-items:center; gap:4px; }
+.kpi-change.up { color:var(--green); }
+.kpi-change.down { color:var(--red); }
+.kpi-icon { position:absolute; top:20px; right:20px; font-size:22px; opacity:0.5; }
+
+/* TABLE */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:10px 14px; color:var(--text2); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--text); }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--bg3); }
+
+/* BADGES */
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(16,185,129,0.12); color:#10b981; }
+.badge-red { background:rgba(239,68,68,0.12); color:#ef4444; }
+.badge-yellow { background:rgba(245,158,11,0.12); color:#f59e0b; }
+.badge-blue { background:rgba(59,130,246,0.12); color:#60a5fa; }
+.badge-purple { background:rgba(139,92,246,0.12); color:#a78bfa; }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:8px; font-family:'Sora',sans-serif; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all 0.15s; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:#2563eb; transform:translateY(-1px); }
+.btn-ghost { background:var(--bg3); color:var(--text); border:1px solid var(--border2); }
+.btn-ghost:hover { background:var(--bg4); }
+.btn-danger { background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.2); }
+.btn-danger:hover { background:rgba(239,68,68,0.2); }
+
+/* SEARCH BAR */
+.search-bar { display:flex; gap:12px; margin-bottom:20px; }
+.search-bar input { flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'Sora',sans-serif; font-size:13px; outline:none; }
+.search-bar input:focus { border-color:var(--accent); }
+.search-bar select { background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'Sora',sans-serif; font-size:13px; outline:none; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border2); border-radius:16px; padding:28px; width:500px; max-width:95vw; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.modal-header h3 { font-size:16px; font-weight:700; }
+.modal-close { background:none; border:none; color:var(--text2); cursor:pointer; font-size:20px; padding:4px; border-radius:6px; }
+.modal-close:hover { background:var(--bg3); }
+.modal-body { display:flex; flex-direction:column; gap:16px; }
+.modal-footer { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+.input-group label { display:block; font-size:12px; font-weight:500; color:var(--text2); margin-bottom:6px; }
+.input-group input, .input-group select, .input-group textarea { width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'Sora',sans-serif; font-size:13px; outline:none; }
+.input-group input:focus, .input-group select:focus { border-color:var(--accent); }
+
+/* TOAST */
+.toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+.toast { background:var(--bg2); border:1px solid var(--border2); border-radius:12px; padding:14px 18px; min-width:280px; display:flex; align-items:center; gap:12px; box-shadow:0 20px 40px rgba(0,0,0,0.3); animation:slideIn 0.3s ease; font-size:13px; }
+@keyframes slideIn { from { transform:translateX(100px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+.toast-icon { font-size:18px; flex-shrink:0; }
+.toast-msg { flex:1; font-weight:500; }
+.toast-success { border-left:3px solid var(--green); }
+.toast-error { border-left:3px solid var(--red); }
+.toast-warning { border-left:3px solid var(--yellow); }
+.toast-info { border-left:3px solid var(--accent); }
+
+/* SKELETON */
+.skeleton { background:linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:8px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* TIMELINE */
+.timeline { padding:0; }
+.timeline-item { display:flex; gap:16px; padding-bottom:20px; position:relative; }
+.timeline-item::before { content:''; position:absolute; left:15px; top:32px; bottom:0; width:1px; background:var(--border2); }
+.timeline-item:last-child::before { display:none; }
+.timeline-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; }
+.timeline-content { flex:1; }
+.timeline-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.timeline-title { font-size:13px; font-weight:600; }
+.timeline-time { font-size:11px; color:var(--text3); }
+.timeline-desc { font-size:12px; color:var(--text2); }
+
+/* PROGRESS BAR */
+.progress-bar { height:6px; background:var(--bg4); border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.6s ease; }
+
+/* STAT ROW */
+.stat-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.stat-row:last-child { border-bottom:none; }
+.stat-label { flex:1; font-size:13px; }
+.stat-bar { width:120px; }
+.stat-val { font-size:13px; font-weight:600; min-width:50px; text-align:right; }
+
+/* VEHICLE CARD */
+.vehicle-card { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.vehicle-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.vehicle-icon { font-size:28px; }
+.vehicle-id { font-size:13px; font-weight:700; }
+.vehicle-route { font-size:12px; color:var(--text2); margin-bottom:12px; }
+.battery-bar { height:8px; background:var(--bg4); border-radius:4px; overflow:hidden; margin-bottom:6px; }
+.battery-fill { height:100%; border-radius:4px; }
+.battery-val { font-size:11px; color:var(--text2); }
+
+/* LOG */
+.log-entry { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; font-family:'JetBrains Mono',monospace; }
+.log-entry:last-child { border-bottom:none; }
+.log-time { color:var(--text3); white-space:nowrap; }
+.log-level { padding:1px 6px; border-radius:4px; font-weight:700; font-size:10px; flex-shrink:0; }
+.log-msg { color:var(--text2); }
+
+/* CHART CONTAINER */
+.chart-wrap { position:relative; height:220px; }
+
+/* SECTION HEADER */
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.section-title { font-size:18px; font-weight:700; }
+.section-sub { font-size:13px; color:var(--text2); margin-top:2px; }
+
+/* FORKLIFT GRID */
+.forklift-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.forklift-card { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.forklift-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.forklift-id { font-size:14px; font-weight:700; }
+.forklift-status { font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; }
+
+/* NOTIFICATION PANEL */
+.notif-panel { position:fixed; top:64px; right:0; width:340px; background:var(--bg2); border-left:1px solid var(--border); height:calc(100vh - 64px); z-index:300; transform:translateX(100%); transition:transform 0.3s; padding:20px; overflow-y:auto; }
+.notif-panel.open { transform:translateX(0); }
+.notif-item { display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); }
+.notif-dot-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+
+/* TABS */
+.tabs { display:flex; gap:4px; background:var(--bg3); padding:4px; border-radius:10px; margin-bottom:20px; }
+.tab { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text2); transition:all 0.15s; border:none; background:none; font-family:'Sora',sans-serif; }
+.tab.active { background:var(--bg2); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+
+/* LOADING */
+.loading-overlay { position:fixed; inset:0; background:var(--bg); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+.loader { width:48px; height:48px; border:3px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ROUTE CARD */
+.route-card { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.route-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.route-path { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
+.route-arrow { color:var(--accent2); }
+
+/* RESPONSIVE */
+@media(max-width:1200px) { .grid-4 { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:900px) { .grid-3, .forklift-grid { grid-template-columns:repeat(2,1fr); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+
+.empty-state { text-align:center; padding:60px 20px; color:var(--text2); }
+.empty-state .empty-icon { font-size:48px; margin-bottom:16px; opacity:0.4; }
+.empty-state p { font-size:14px; }
+
+.page-header { margin-bottom:28px; }
+.page-header h2 { font-size:22px; font-weight:700; }
+.page-header p { font-size:14px; color:var(--text2); margin-top:4px; }
+
+.api-badge { background:var(--bg4); border:1px solid var(--border2); padding:6px 12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); }
+
+/* SETTINGS */
+.settings-section { margin-bottom:28px; }
+.settings-section h3 { font-size:14px; font-weight:600; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.settings-item { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+.settings-item:last-child { border-bottom:none; }
+.settings-label { font-size:13px; font-weight:500; }
+.settings-desc { font-size:12px; color:var(--text2); margin-top:2px; }
+.toggle { position:relative; width:44px; height:24px; background:var(--bg4); border-radius:12px; cursor:pointer; transition:background 0.2s; }
+.toggle.on { background:var(--accent); }
+.toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#fff; border-radius:50%; transition:transform 0.2s; }
+.toggle.on::after { transform:translateX(20px); }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loader">
+  <div class="loader"></div>
+  <p style="color:var(--text2);font-size:13px;">Inicializando LogixPro...</p>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">🚛</div>
+      <h1>Logix<span>Pro</span></h1>
+    </div>
+    <p class="login-sub">Plataforma logística enterprise. Acesse com suas credenciais corporativas.</p>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input type="text" id="login-user" value="admin@logixpro.com" placeholder="seu@email.com">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" value="admin123" placeholder="••••••••">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Entrar na plataforma →</button>
+    <p class="login-hint">Demo: <code>admin@logixpro.com</code> / <code>admin123</code></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-mark">🚛</div>
+        <div class="logo-text">Logix<span>Pro</span></div>
+      </div>
+      <button class="collapse-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+          <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showPage('wms')">
+          <span class="nav-icon">📦</span><span class="nav-label">Estoque (WMS)</span>
+          <span class="nav-badge" id="critical-badge">3</span>
+        </div>
+        <div class="nav-item" onclick="showPage('tracking')">
+          <span class="nav-icon">🚚</span><span class="nav-label">Rastreamento</span>
+        </div>
+        <div class="nav-item" onclick="showPage('routes')">
+          <span class="nav-icon">🗺️</span><span class="nav-label">Rotas</span>
+        </div>
+        <div class="nav-item" onclick="showPage('fleet')">
+          <span class="nav-icon">🏗️</span><span class="nav-label">Frota Interna</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Sistema</div>
+        <div class="nav-item" onclick="showPage('users')">
+          <span class="nav-icon">👥</span><span class="nav-label">Usuários</span>
+        </div>
+        <div class="nav-item" onclick="showPage('logs')">
+          <span class="nav-icon">📋</span><span class="nav-label">Logs de Auditoria</span>
+        </div>
+        <div class="nav-item" onclick="showPage('settings')">
+          <span class="nav-icon">⚙️</span><span class="nav-label">Configurações</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">AD</div>
+        <div class="user-info">
+          <div class="user-name">Admin Silva</div>
+          <div class="user-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar produtos, rotas, veículos...">
+      </div>
+      <div class="icon-btn notif-dot" onclick="toggleNotif()" title="Notificações">🔔</div>
+      <div class="icon-btn theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</div>
+      <div class="icon-btn" onclick="doLogout()" title="Sair">🚪</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2>Dashboard Operacional</h2>
+          <p>Visão geral em tempo real — atualizado há 2 minutos</p>
+        </div>
+        <div class="grid-4">
+          <div class="kpi-card blue">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Total Operações</div>
+            <div class="kpi-value" id="kpi-ops">1.847</div>
+            <div class="kpi-change up">▲ 12,4% vs mês anterior</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-label">Valor em Estoque</div>
+            <div class="kpi-value" id="kpi-stock">R$2,4M</div>
+            <div class="kpi-change up">▲ 5,8% vs semana anterior</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-label">Eficiência Logística</div>
+            <div class="kpi-value" id="kpi-eff">94,2%</div>
+            <div class="kpi-change down">▼ 0,3% vs ontem</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-icon">🚚</div>
+            <div class="kpi-label">Entregas Ativas</div>
+            <div class="kpi-value" id="kpi-del">38</div>
+            <div class="kpi-change up">▲ 3 em trânsito</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Operações nos Últimos 7 Dias</div>
+            <div class="chart-wrap"><canvas id="chart-ops"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Distribuição por Status</div>
+            <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Estoque por Categoria</div>
+            <div class="chart-wrap"><canvas id="chart-stock"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Últimas Movimentações</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Status</th></tr></thead>
+                <tbody id="dash-movements"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WMS -->
+      <div class="page" id="page-wms">
+        <div class="page-header">
+          <h2>Gestão de Estoque (WMS)</h2>
+          <p>Controle completo de entrada, saída e inventário</p>
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this,'wms-tab-inventory')">📦 Inventário</button>
+          <button class="tab" onclick="switchTab(this,'wms-tab-movements')">🔄 Movimentações</button>
+          <button class="tab" onclick="switchTab(this,'wms-tab-warehouses')">🏭 Armazéns</button>
+        </div>
+
+        <!-- INVENTÁRIO -->
+        <div id="wms-tab-inventory">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Inventário de Produtos</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" onclick="exportCSV()">📥 Exportar CSV</button>
+              <button class="btn btn-primary" onclick="openModal('modal-product')">+ Novo Produto</button>
+            </div>
+          </div>
+          <div class="search-bar">
+            <input type="text" placeholder="Buscar por nome, SKU, categoria..." oninput="filterProducts(this.value)" id="product-search">
+            <select onchange="filterProductStatus(this.value)">
+              <option value="">Todos os Status</option>
+              <option value="ideal">Ideal</option>
+              <option value="baixo">Baixo</option>
+              <option value="critico">Crítico</option>
+            </select>
+            <select onchange="filterProductCat(this.value)">
+              <option value="">Todas Categorias</option>
+              <option value="Eletrônicos">Eletrônicos</option>
+              <option value="Ferramentas">Ferramentas</option>
+              <option value="Materiais">Materiais</option>
+              <option value="Alimentos">Alimentos</option>
+            </select>
+          </div>
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>SKU</th><th>Produto</th><th>Categoria</th><th>Estoque</th><th>Mínimo</th><th>Localização</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="products-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOVIMENTAÇÕES -->
+        <div id="wms-tab-movements" style="display:none">
+          <div class="section-header">
+            <div class="section-title">Histórico de Movimentações</div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" onclick="openModal('modal-entry')">📥 Entrada</button>
+              <button class="btn btn-danger" onclick="openModal('modal-exit')">📤 Saída</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Data/Hora</th><th>Produto</th><th>Tipo</th><th>Quantidade</th><th>Operador</th><th>Observação</th></tr></thead>
+                <tbody id="movements-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARMAZÉNS -->
+        <div id="wms-tab-warehouses" style="display:none">
+          <div class="grid-3" id="warehouses-grid"></div>
+        </div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="page" id="page-tracking">
+        <div class="page-header">
+          <h2>Rastreamento de Veículos</h2>
+          <p>Monitoramento em tempo real da frota externa</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Veículos Ativos</div>
+            <div id="vehicles-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Timeline de Eventos</div>
+            <div class="timeline" id="timeline-events"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">Histórico por Veículo</div>
+          <div class="search-bar">
+            <select id="vehicle-filter" onchange="filterVehicleHistory(this.value)" style="max-width:200px">
+              <option value="">Todos os Veículos</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Veículo</th><th>Placa</th><th>Localização</th><th>Status</th><th>Última Atualização</th><th>Motorista</th></tr></thead>
+              <tbody id="tracking-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTES -->
+      <div class="page" id="page-routes">
+        <div class="page-header">
+          <h2>Gestão de Rotas</h2>
+          <p>Planejamento e eficiência de rotas logísticas</p>
+        </div>
+        <div class="section-header">
+          <div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-route')">+ Nova Rota</button>
+        </div>
+        <div id="routes-container"></div>
+      </div>
+
+      <!-- FLEET -->
+      <div class="page" id="page-fleet">
+        <div class="page-header">
+          <h2>Frota Interna</h2>
+          <p>Controle de empilhadeiras e equipamentos internos</p>
+        </div>
+        <div class="grid-4" style="margin-bottom:24px">
+          <div class="kpi-card green">
+            <div class="kpi-label">Em Operação</div>
+            <div class="kpi-value" id="fleet-active">8</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Em Manutenção</div>
+            <div class="kpi-value" id="fleet-maint">3</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">Disponíveis</div>
+            <div class="kpi-value" id="fleet-avail">4</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-label">Total Frota</div>
+            <div class="kpi-value">15</div>
+          </div>
+        </div>
+        <div class="forklift-grid" id="forklifts-grid"></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="page-header">
+          <h2>Gestão de Usuários</h2>
+          <p>Controle de acesso e permissões do sistema</p>
+        </div>
+        <div class="section-header">
+          <div></div>
+          <button class="btn btn-primary" onclick="openModal('modal-user')">+ Novo Usuário</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Último Acesso</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="users-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="page" id="page-logs">
+        <div class="page-header">
+          <h2>Logs de Auditoria</h2>
+          <p>Registro completo de todas as ações do sistema</p>
+        </div>
+        <div class="card">
+          <div id="logs-container" style="max-height:600px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <h2>Configurações</h2>
+          <p>Preferências do sistema e da plataforma</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="settings-section">
+              <h3>Interface</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="settings-label">Modo escuro</div>
+                  <div class="settings-desc">Alternar entre tema claro e escuro</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on');toggleTheme()"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="settings-label">Notificações</div>
+                  <div class="settings-desc">Alertas de estoque crítico e rotas</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-item">
+                <div>
+                  <div class="settings-label">Atualização automática</div>
+                  <div class="settings-desc">Atualizar dados a cada 30 segundos</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="settings-section">
+              <h3>API & Integração</h3>
+              <div class="settings-item">
+                <div>
+                  <div class="settings-label">Endpoints disponíveis</div>
+                  <div class="settings-desc">REST API para integração externa</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+                <div class="api-badge">POST /api/auth/login</div>
+                <div class="api-badge">GET  /api/products</div>
+                <div class="api-badge">POST /api/stock/entry</div>
+                <div class="api-badge">POST /api/stock/exit</div>
+                <div class="api-badge">GET  /api/tracking</div>
+                <div class="api-badge">GET  /api/routes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <h3 style="font-size:15px;font-weight:700">Notificações</h3>
+    <button onclick="toggleNotif()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px">✕</button>
+  </div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Novo Produto</h3>
+      <button class="modal-close" onclick="closeModal('modal-product')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group"><label>Nome do Produto</label><input type="text" id="p-name" placeholder="Ex: Parafuso M8"></div>
+      <div class="input-group"><label>SKU</label><input type="text" id="p-sku" placeholder="Ex: SKU-0091"></div>
+      <div class="input-group"><label>Categoria</label>
+        <select id="p-cat"><option>Eletrônicos</option><option>Ferramentas</option><option>Materiais</option><option>Alimentos</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="input-group"><label>Estoque Inicial</label><input type="number" id="p-qty" placeholder="0"></div>
+        <div class="input-group"><label>Estoque Mínimo</label><input type="number" id="p-min" placeholder="10"></div>
+      </div>
+      <div class="input-group"><label>Localização no Armazém</label><input type="text" id="p-loc" placeholder="Ex: A-12-3"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addProduct()">Cadastrar Produto</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-entry">
+  <div class="modal">
+    <div class="modal-header"><h3>📥 Entrada de Estoque</h3><button class="modal-close" onclick="closeModal('modal-entry')">✕</button></div>
+    <div class="modal-body">
+      <div class="input-group"><label>Produto</label><select id="entry-product" style="width:100%"></select></div>
+      <div class="input-group"><label>Quantidade</label><input type="number" id="entry-qty" placeholder="0" min="1"></div>
+      <div class="input-group"><label>Observação</label><input type="text" id="entry-obs" placeholder="Nota fiscal, fornecedor..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-entry')">Cancelar</button>
+      <button class="btn btn-primary" onclick="doEntry()">Confirmar Entrada</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-exit">
+  <div class="modal">
+    <div class="modal-header"><h3>📤 Saída de Estoque</h3><button class="modal-close" onclick="closeModal('modal-exit')">✕</button></div>
+    <div class="modal-body">
+      <div class="input-group"><label>Produto</label><select id="exit-product" style="width:100%"></select></div>
+      <div class="input-group"><label>Quantidade</label><input type="number" id="exit-qty" placeholder="0" min="1"></div>
+      <div class="input-group"><label>Destino / Observação</label><input type="text" id="exit-obs" placeholder="Expedição, transferência..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-exit')">Cancelar</button>
+      <button class="btn btn-danger" onclick="doExit()">Confirmar Saída</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-route">
+  <div class="modal">
+    <div class="modal-header"><h3>🗺️ Nova Rota</h3><button class="modal-close" onclick="closeModal('modal-route')">✕</button></div>
+    <div class="modal-body">
+      <div class="input-group"><label>Origem</label><input type="text" id="r-origin" placeholder="Ex: CD Campinas"></div>
+      <div class="input-group"><label>Destino</label><input type="text" id="r-dest" placeholder="Ex: SP Capital"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="input-group"><label>Distância (km)</label><input type="number" id="r-dist" placeholder="0"></div>
+        <div class="input-group"><label>Veículo</label><select id="r-vehicle"></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-route')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addRoute()">Criar Rota</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header"><h3>👤 Novo Usuário</h3><button class="modal-close" onclick="closeModal('modal-user')">✕</button></div>
+    <div class="modal-body">
+      <div class="input-group"><label>Nome Completo</label><input type="text" id="u-name" placeholder="Nome do usuário"></div>
+      <div class="input-group"><label>Email</label><input type="email" id="u-email" placeholder="email@empresa.com"></div>
+      <div class="input-group"><label>Perfil de Acesso</label>
+        <select id="u-role"><option value="admin">Administrador</option><option value="operador">Operador</option><option value="viewer">Visualizador</option></select>
+      </div>
+      <div class="input-group"><label>Senha</label><input type="password" id="u-pass" placeholder="Mínimo 8 caracteres"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addUser()">Criar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ============================================================
+// DATA STORE (simulated backend)
+// ============================================================
+const DB = {
+  currentUser: null,
+  products: [
+    {id:1,sku:'SKU-0001',name:'Parafuso M8 Inox',cat:'Materiais',qty:450,min:100,loc:'A-01-1',wh:'Armazém SP'},
+    {id:2,sku:'SKU-0002',name:'Sensor de Temperatura',cat:'Eletrônicos',qty:32,min:50,loc:'B-03-2',wh:'Armazém SP'},
+    {id:3,sku:'SKU-0003',name:'Cabo de Energia 3m',cat:'Eletrônicos',qty:8,min:30,loc:'B-04-1',wh:'Armazém RJ'},
+    {id:4,sku:'SKU-0004',name:'Chave de Fenda Philips',cat:'Ferramentas',qty:120,min:20,loc:'C-01-3',wh:'Armazém SP'},
+    {id:5,sku:'SKU-0005',name:'Motor Elétrico 220V',cat:'Eletrônicos',qty:5,min:10,loc:'D-02-1',wh:'Armazém MG'},
+    {id:6,sku:'SKU-0006',name:'Tubo PVC 50mm',cat:'Materiais',qty:280,min:50,loc:'A-05-2',wh:'Armazém RJ'},
+    {id:7,sku:'SKU-0007',name:'Resistência Cerâmica',cat:'Eletrônicos',qty:2,min:20,loc:'B-02-4',wh:'Armazém SP'},
+    {id:8,sku:'SKU-0008',name:'Alicate Universal',cat:'Ferramentas',qty:90,min:15,loc:'C-03-1',wh:'Armazém MG'},
+  ],
+  movements: [
+    {id:1,product:'Parafuso M8 Inox',type:'entrada',qty:200,op:'Admin Silva',obs:'NF-001234',ts:'2025-01-18 08:30'},
+    {id:2,product:'Sensor de Temperatura',type:'saida',qty:15,op:'João Santos',obs:'Expedição Campinas',ts:'2025-01-18 09:15'},
+    {id:3,product:'Cabo de Energia 3m',type:'saida',qty:12,op:'Admin Silva',obs:'Transfer RJ→SP',ts:'2025-01-18 10:00'},
+    {id:4,product:'Chave de Fenda Philips',type:'entrada',qty:50,op:'Maria Costa',obs:'Reposição estoque',ts:'2025-01-18 11:20'},
+    {id:5,product:'Motor Elétrico 220V',type:'saida',qty:2,op:'João Santos',obs:'Expedição urgente',ts:'2025-01-18 13:45'},
+  ],
+  vehicles: [
+    {id:'TRK-001',plate:'ABC-1234',type:'truck',driver:'Carlos Mendes',route:'SP → Campinas',status:'em_transito',lat:-23.1,lng:-47.0,updated:'14:32'},
+    {id:'TRK-002',plate:'DEF-5678',type:'truck',driver:'Ana Souza',route:'RJ → BH',status:'entregue',lat:-22.9,lng:-43.2,updated:'12:15'},
+    {id:'VAN-001',plate:'GHI-9012',type:'van',driver:'Pedro Lima',route:'SP → Santos',status:'em_transito',lat:-23.5,lng:-46.6,updated:'14:28'},
+    {id:'CAR-001',plate:'JKL-3456',type:'car',driver:'Lucia Ferreira',route:'SP → Guarulhos',status:'aguardando',lat:-23.4,lng:-46.5,updated:'09:00'},
+    {id:'TRK-003',plate:'MNO-7890',type:'truck',driver:'Roberto Silva',route:'MG → SP',status:'em_transito',lat:-20.1,lng:-44.5,updated:'14:40'},
+  ],
+  routes: [
+    {id:1,origin:'CD Campinas',dest:'SP Capital',dist:100,vehicle:'TRK-001',status:'ativo',efficiency:94},
+    {id:2,origin:'CD São Paulo',dest:'Santos',dist:75,vehicle:'VAN-001',status:'ativo',efficiency:88},
+    {id:3,origin:'CD Belo Horizonte',dest:'Uberlândia',dist:440,vehicle:'TRK-003',status:'planejado',efficiency:91},
+    {id:4,origin:'CD Rio de Janeiro',dest:'Niterói',dist:20,vehicle:'TRK-002',status:'concluido',efficiency:97},
+  ],
+  forklifts: [
+    {id:'EMP-001',model:'Toyota 8FBE15',battery:82,status:'operando',area:'Corredor A'},
+    {id:'EMP-002',model:'Still RX20-15',battery:45,status:'operando',area:'Doca 3'},
+    {id:'EMP-003',model:'Hyster J1.8XNT',battery:20,status:'carregando',area:'Estação 1'},
+    {id:'EMP-004',model:'Toyota 8FBE15',battery:95,status:'disponível',area:'Corredor B'},
+    {id:'EMP-005',model:'Crown FC5200',battery:8,status:'manutenção',area:'Oficina'},
+    {id:'EMP-006',model:'Still RX20-15',battery:67,status:'operando',area:'Corredor C'},
+    {id:'EMP-007',model:'Hyster J1.8XNT',battery:53,status:'operando',area:'Doca 1'},
+    {id:'EMP-008',model:'Toyota 8FBE15',battery:39,status:'disponível',area:'Corredor A'},
+    {id:'EMP-009',model:'Crown FC5200',battery:71,status:'operando',area:'Doca 2'},
+    {id:'EMP-010',model:'Still RX20-15',battery:12,status:'manutenção',area:'Oficina'},
+    {id:'EMP-011',model:'Hyster J1.8XNT',battery:88,status:'operando',area:'Corredor D'},
+    {id:'EMP-012',model:'Toyota 8FBE15',battery:33,status:'disponível',area:'Doca 4'},
+  ],
+  users: [
+    {id:1,name:'Admin Silva',email:'admin@logixpro.com',role:'admin',lastAccess:'Agora',status:'ativo'},
+    {id:2,name:'João Santos',email:'joao@logixpro.com',role:'operador',lastAccess:'Há 2h',status:'ativo'},
+    {id:3,name:'Maria Costa',email:'maria@logixpro.com',role:'operador',lastAccess:'Ontem',status:'ativo'},
+    {id:4,name:'Pedro Lima',email:'pedro@logixpro.com',role:'viewer',lastAccess:'Há 3 dias',status:'inativo'},
+  ],
+  logs: [],
+  warehouses: [
+    {id:1,name:'Armazém SP',location:'São Paulo, SP',capacity:5000,used:3200,products:45},
+    {id:2,name:'Armazém RJ',location:'Rio de Janeiro, RJ',capacity:3000,used:1800,products:28},
+    {id:3,name:'Armazém MG',location:'Belo Horizonte, MG',capacity:2000,used:950,products:19},
+  ],
+  notifications: [
+    {type:'warning',title:'Estoque Crítico',msg:'Resistência Cerâmica: apenas 2 unidades',time:'14:35'},
+    {type:'info',title:'Entrega Concluída',msg:'TRK-002 chegou ao destino RJ → BH',time:'12:15'},
+    {type:'warning',title:'Bateria Baixa',msg:'EMP-005 com 8% de carga',time:'11:50'},
+    {type:'success',title:'Rota Otimizada',msg:'SP → Santos: economia de 12 km',time:'10:30'},
+    {type:'error',title:'Manutenção Necessária',msg:'EMP-010 requer revisão preventiva',time:'09:00'},
+  ],
+  nextId: 100,
+};
+
+// Log helper
+function addLog(action, detail, level='INFO') {
+  const ts = new Date().toLocaleTimeString('pt-BR');
+  DB.logs.unshift({ts, level, action, detail, user: 'Admin Silva'});
+  if(DB.logs.length > 200) DB.logs.pop();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin() {
+  const u = document.getElementById('login-user').value;
+  const p = document.getElementById('login-pass').value;
+  if(u==='admin@logixpro.com' && p==='admin123') {
+    showLoader(1200, ()=>{
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').style.display='flex';
+      initApp();
+    });
+  } else {
+    showToast('Credenciais inválidas. Use admin@logixpro.com / admin123','error');
+  }
+}
+document.getElementById('login-pass').addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
+
+function doLogout() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  showToast('Sessão encerrada com segurança','info');
+}
+
+// ============================================================
+// APP INIT
+// ============================================================
+function initApp() {
+  addLog('AUTH', 'Login realizado por Admin Silva');
+  renderDashboard();
+  renderProducts();
+  renderMovements();
+  renderWarehouses();
+  renderTracking();
+  renderRoutes();
+  renderFleet();
+  renderUsers();
+  renderLogs();
+  renderNotifications();
+  populateSelects();
+  initCharts();
+  updateCriticalBadge();
+}
+
+function showLoader(ms, cb) {
+  document.getElementById('loader').style.display='flex';
+  setTimeout(()=>{ document.getElementById('loader').style.display='none'; cb(); }, ms);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const titles = {dashboard:'Dashboard Operacional',wms:'Gestão de Estoque',tracking:'Rastreamento',routes:'Gestão de Rotas',fleet:'Frota Interna',users:'Usuários',logs:'Logs de Auditoria',settings:'Configurações'};
+  document.getElementById('page-title').textContent = titles[name] || name;
+  event.currentTarget.classList.add('active');
+  if(name==='logs') renderLogs();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function switchTab(btn, tabId) {
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const parent = btn.closest('.page');
+  parent.querySelectorAll('[id^="wms-tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById(tabId).style.display='block';
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme==='dark' ? 'light' : 'dark';
+  // Rebuild charts on theme switch
+  setTimeout(initCharts, 100);
+}
+
+function toggleNotif() {
+  document.getElementById('notif-panel').classList.toggle('open');
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+let charts = {};
+function initCharts() {
+  Object.values(charts).forEach(c=>c.destroy());
+  charts = {};
+  const isDark = document.documentElement.dataset.theme !== 'light';
+  const grid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const text = isDark ? '#8892a4' : '#4a5568';
+  Chart.defaults.color = text;
+
+  // Ops line
+  charts.ops = new Chart(document.getElementById('chart-ops'), {
+    type:'line',
+    data:{
+      labels:['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],
+      datasets:[{
+        label:'Entradas',data:[120,185,140,210,170,195,210],
+        borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#3b82f6'
+      },{
+        label:'Saídas',data:[90,140,120,180,155,170,185],
+        borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#10b981'
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{grid:{color:grid}},x:{grid:{color:grid}}}}
+  });
+
+  // Status donut
+  charts.status = new Chart(document.getElementById('chart-status'), {
+    type:'doughnut',
+    data:{
+      labels:['Em Trânsito','Entregue','Aguardando','Cancelado'],
+      datasets:[{data:[38,142,24,6],backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}},cutout:'65%'}
+  });
+
+  // Stock bar
+  charts.stock = new Chart(document.getElementById('chart-stock'), {
+    type:'bar',
+    data:{
+      labels:['Eletrônicos','Ferramentas','Materiais','Alimentos'],
+      datasets:[{
+        label:'Unidades',data:[847,1230,2100,650],
+        backgroundColor:['rgba(59,130,246,0.7)','rgba(139,92,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)'],
+        borderRadius:6,borderWidth:0
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:grid}},x:{grid:{display:false}}}}
+  });
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const recent = [...DB.movements].slice(0,5);
+  const tbody = document.getElementById('dash-movements');
+  tbody.innerHTML = recent.map(m=>`
+    <tr>
+      <td style="font-weight:500">${m.product.substring(0,20)}</td>
+      <td><span class="badge ${m.type==='entrada'?'badge-green':'badge-red'}">${m.type}</span></td>
+      <td>${m.qty}</td>
+      <td><span class="badge badge-blue">✓ OK</span></td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// WMS
+// ============================================================
+function getStatus(p) {
+  if(p.qty===0) return {label:'Sem estoque',cls:'badge-red',key:'critico'};
+  if(p.qty < p.min) return {label:'Crítico',cls:'badge-red',key:'critico'};
+  if(p.qty < p.min*1.5) return {label:'Baixo',cls:'badge-yellow',key:'baixo'};
+  return {label:'Ideal',cls:'badge-green',key:'ideal'};
+}
+
+let productFilter='', productStatusFilter='', productCatFilter='';
+function filterProducts(v){ productFilter=v.toLowerCase(); renderProducts(); }
+function filterProductStatus(v){ productStatusFilter=v; renderProducts(); }
+function filterProductCat(v){ productCatFilter=v; renderProducts(); }
+
+function renderProducts() {
+  let list = DB.products.filter(p=>{
+    if(productFilter && !p.name.toLowerCase().includes(productFilter) && !p.sku.toLowerCase().includes(productFilter)) return false;
+    const st = getStatus(p);
+    if(productStatusFilter && st.key !== productStatusFilter) return false;
+    if(productCatFilter && p.cat !== productCatFilter) return false;
+    return true;
+  });
+  const tbody = document.getElementById('products-table');
+  if(!list.length){ tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📦</div><p>Nenhum produto encontrado</p></div></td></tr>`; return; }
+  tbody.innerHTML = list.map(p=>{
+    const st = getStatus(p);
+    return `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2)">${p.sku}</td>
+      <td style="font-weight:500">${p.name}</td>
+      <td><span class="badge badge-blue">${p.cat}</span></td>
+      <td style="font-weight:700;font-size:15px">${p.qty}</td>
+      <td style="color:var(--text2)">${p.min}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2)">${p.loc}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="doEntryFor(${p.id})">+ Entrada</button>
+        <button class="btn btn-danger" style="padding:5px 10px;font-size:11px;margin-left:4px" onclick="doExitFor(${p.id})">- Saída</button>
+      </td>
+    </tr>`;
+  }).join('');
+  updateCriticalBadge();
+}
+
+function updateCriticalBadge() {
+  const c = DB.products.filter(p=>getStatus(p).key==='critico').length;
+  document.getElementById('critical-badge').textContent = c;
+  document.getElementById('critical-badge').style.display = c>0?'':'none';
+}
+
+function renderMovements() {
+  const tbody = document.getElementById('movements-table');
+  tbody.innerHTML = DB.movements.map(m=>`
+    <tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${m.ts}</td>
+      <td style="font-weight:500">${m.product}</td>
+      <td><span class="badge ${m.type==='entrada'?'badge-green':'badge-red'}">${m.type==='entrada'?'📥 Entrada':'📤 Saída'}</span></td>
+      <td style="font-weight:700">${m.qty}</td>
+      <td>${m.op}</td>
+      <td style="color:var(--text2);font-size:12px">${m.obs}</td>
+    </tr>`).join('');
+}
+
+function renderWarehouses() {
+  const grid = document.getElementById('warehouses-grid');
+  grid.innerHTML = DB.warehouses.map(w=>{
+    const pct = Math.round(w.used/w.capacity*100);
+    const color = pct>85?'var(--red)':pct>60?'var(--yellow)':'var(--green)';
+    return `<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:16px;font-weight:700">🏭 ${w.name}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${w.location}</div>
+        </div>
+        <span class="badge badge-blue">${w.products} SKUs</span>
+      </div>
+      <div style="margin-bottom:8px;font-size:12px;color:var(--text2)">Capacidade utilizada</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px">
+        <span style="color:var(--text2)">${w.used.toLocaleString('pt-BR')} unid.</span>
+        <span style="font-weight:600;color:${color}">${pct}%</span>
+        <span style="color:var(--text2)">${w.capacity.toLocaleString('pt-BR')} cap.</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addProduct() {
+  const name=document.getElementById('p-name').value;
+  const sku=document.getElementById('p-sku').value;
+  const cat=document.getElementById('p-cat').value;
+  const qty=parseInt(document.getElementById('p-qty').value)||0;
+  const min=parseInt(document.getElementById('p-min').value)||10;
+  const loc=document.getElementById('p-loc').value;
+  if(!name||!sku){ showToast('Preencha nome e SKU','warning'); return; }
+  DB.products.push({id:++DB.nextId,sku,name,cat,qty,min,loc,wh:'Armazém SP'});
+  addLog('WMS','Produto cadastrado: '+name);
+  closeModal('modal-product');
+  renderProducts();
+  populateSelects();
+  showToast('Produto cadastrado com sucesso','success');
+  document.getElementById('p-name').value='';
+  document.getElementById('p-sku').value='';
+  document.getElementById('p-qty').value='';
+  document.getElementById('p-min').value='';
+  document.getElementById('p-loc').value='';
+}
+
+function doEntryFor(id) {
+  const p = DB.products.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('entry-product').value = id;
+  openModal('modal-entry');
+}
+function doExitFor(id) {
+  const p = DB.products.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('exit-product').value = id;
+  openModal('modal-exit');
+}
+
+function doEntry() {
+  const pid=parseInt(document.getElementById('entry-product').value);
+  const qty=parseInt(document.getElementById('entry-qty').value);
+  const obs=document.getElementById('entry-obs').value;
+  if(!qty||qty<1){ showToast('Informe uma quantidade válida','warning'); return; }
+  const p = DB.products.find(x=>x.id===pid);
+  if(!p) return;
+  p.qty += qty;
+  const ts = new Date().toLocaleString('pt-BR').slice(0,16);
+  DB.movements.unshift({id:++DB.nextId,product:p.name,type:'entrada',qty,op:'Admin Silva',obs:obs||'-',ts});
+  addLog('WMS',`Entrada: ${qty} × ${p.name}`);
+  closeModal('modal-entry');
+  renderProducts();
+  renderMovements();
+  renderDashboard();
+  showToast(`Entrada de ${qty} unidades registrada`,'success');
+}
+
+function doExit() {
+  const pid=parseInt(document.getElementById('exit-product').value);
+  const qty=parseInt(document.getElementById('exit-qty').value);
+  const obs=document.getElementById('exit-obs').value;
+  if(!qty||qty<1){ showToast('Informe uma quantidade válida','warning'); return; }
+  const p = DB.products.find(x=>x.id===pid);
+  if(!p) return;
+  if(p.qty < qty){ showToast('Estoque insuficiente para essa saída','error'); return; }
+  p.qty -= qty;
+  const ts = new Date().toLocaleString('pt-BR').slice(0,16);
+  DB.movements.unshift({id:++DB.nextId,product:p.name,type:'saida',qty,op:'Admin Silva',obs:obs||'-',ts});
+  addLog('WMS',`Saída: ${qty} × ${p.name}`);
+  closeModal('modal-exit');
+  renderProducts();
+  renderMovements();
+  renderDashboard();
+  if(p.qty < p.min) showToast(`⚠️ ${p.name} abaixo do mínimo!`,'warning');
+  else showToast(`Saída de ${qty} unidades registrada`,'success');
+}
+
+function exportCSV() {
+  const headers = 'SKU,Produto,Categoria,Estoque,Mínimo,Localização,Status\n';
+  const rows = DB.products.map(p=>`${p.sku},"${p.name}",${p.cat},${p.qty},${p.min},${p.loc},${getStatus(p).label}`).join('\n');
+  const blob = new Blob([headers+rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'estoque-logixpro.csv';
+  a.click();
+  showToast('CSV exportado com sucesso','success');
+  addLog('EXPORT','Exportação CSV de estoque');
+}
+
+// ============================================================
+// TRACKING
+// ============================================================
+function renderTracking() {
+  const statusMap = {em_transito:{label:'Em Trânsito',cls:'badge-blue',icon:'🚛'},entregue:{label:'Entregue',cls:'badge-green',icon:'✅'},aguardando:{label:'Aguardando',cls:'badge-yellow',icon:'⏳'}};
+  const list = document.getElementById('vehicles-list');
+  list.innerHTML = DB.vehicles.map(v=>{
+    const s = statusMap[v.status];
+    return `<div class="vehicle-card" style="margin-bottom:10px">
+      <div class="vehicle-card-header">
+        <div>
+          <div style="font-weight:700;font-size:14px">${s.icon} ${v.id}</div>
+          <div style="font-size:12px;color:var(--text2)">${v.plate} — ${v.driver}</div>
+        </div>
+        <span class="badge ${s.cls}">${s.label}</span>
+      </div>
+      <div class="vehicle-route">📍 ${v.route}</div>
+      <div style="font-size:11px;color:var(--text3)">Última atualização: ${v.updated}</div>
+    </div>`;
+  }).join('');
+
+  // Timeline
+  const events = [
+    {icon:'🚛',color:'var(--accent)',title:'TRK-001 partiu de Campinas',time:'14:32',desc:'Carga completa — 2.400 kg'},
+    {icon:'✅',color:'var(--green)',title:'TRK-002 chegou ao destino',time:'12:15',desc:'Entrega concluída em RJ'},
+    {icon:'⚠️',color:'var(--yellow)',title:'VAN-001 parou para abastecimento',time:'11:45',desc:'Previsão: +20 min na rota'},
+    {icon:'📋',color:'var(--purple)',title:'CAR-001 aguardando autorização',time:'09:00',desc:'Dependência de liberação fiscal'},
+    {icon:'🔧',color:'var(--text2)',title:'Manutenção preventiva TRK-004',time:'08:30',desc:'Previsto retorno às 16h'},
+  ];
+  document.getElementById('timeline-events').innerHTML = events.map(e=>`
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:${e.color}20">${e.icon}</div>
+      <div class="timeline-content">
+        <div class="timeline-header">
+          <span class="timeline-title">${e.title}</span>
+          <span class="timeline-time">${e.time}</span>
+        </div>
+        <div class="timeline-desc">${e.desc}</div>
+      </div>
+    </div>`).join('');
+
+  // Table
+  const tbody = document.getElementById('tracking-table');
+  tbody.innerHTML = DB.vehicles.map(v=>{
+    const s = statusMap[v.status];
+    return `<tr>
+      <td style="font-weight:600">${v.id}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${v.plate}</td>
+      <td style="color:var(--text2)">${v.route}</td>
+      <td><span class="badge ${s.cls}">${s.label}</span></td>
+      <td style="color:var(--text2);font-size:12px">${v.updated}</td>
+      <td>${v.driver}</td>
+    </tr>`;
+  }).join('');
+
+  // Filter select
+  const sel = document.getElementById('vehicle-filter');
+  sel.innerHTML = '<option value="">Todos</option>'+DB.vehicles.map(v=>`<option value="${v.id}">${v.id} — ${v.driver}</option>`).join('');
+}
+
+function filterVehicleHistory(id) {
+  const tbody = document.getElementById('tracking-table');
+  const statusMap = {em_transito:{label:'Em Trânsito',cls:'badge-blue'},entregue:{label:'Entregue',cls:'badge-green'},aguardando:{label:'Aguardando',cls:'badge-yellow'}};
+  const list = id ? DB.vehicles.filter(v=>v.id===id) : DB.vehicles;
+  tbody.innerHTML = list.map(v=>{
+    const s = statusMap[v.status];
+    return `<tr><td style="font-weight:600">${v.id}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${v.plate}</td><td style="color:var(--text2)">${v.route}</td><td><span class="badge ${s.cls}">${s.label}</span></td><td style="color:var(--text2);font-size:12px">${v.updated}</td><td>${v.driver}</td></tr>`;
+  }).join('');
+}
+
+// ============================================================
+// ROUTES
+// ============================================================
+function renderRoutes() {
+  const statusMap = {ativo:{label:'Ativo',cls:'badge-green'},planejado:{label:'Planejado',cls:'badge-blue'},concluido:{label:'Concluído',cls:'badge-purple'}};
+  const c = document.getElementById('routes-container');
+  if(!DB.routes.length){ c.innerHTML=`<div class="empty-state"><div class="empty-icon">🗺️</div><p>Nenhuma rota cadastrada</p></div>`; return; }
+  c.innerHTML = DB.routes.map(r=>{
+    const s = statusMap[r.status];
+    const effColor = r.efficiency>=90?'var(--green)':r.efficiency>=75?'var(--yellow)':'var(--red)';
+    return `<div class="route-card">
+      <div class="route-header">
+        <div class="route-path">
+          <span>${r.origin}</span>
+          <span class="route-arrow">→</span>
+          <span>${r.dest}</span>
+        </div>
+        <span class="badge ${s.cls}">${s.label}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;font-size:13px">
+        <div><div style="color:var(--text2);margin-bottom:4px;font-size:11px">DISTÂNCIA</div><div style="font-weight:700">${r.dist} km</div></div>
+        <div><div style="color:var(--text2);margin-bottom:4px;font-size:11px">VEÍCULO</div><div style="font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px">${r.vehicle}</div></div>
+        <div><div style="color:var(--text2);margin-bottom:4px;font-size:11px">EFICIÊNCIA</div><div style="font-weight:700;color:${effColor}">${r.efficiency}%</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${r.efficiency}%;background:${effColor}"></div></div>
+          <span style="font-size:12px;color:var(--text2)">${r.efficiency}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addRoute() {
+  const origin=document.getElementById('r-origin').value;
+  const dest=document.getElementById('r-dest').value;
+  const dist=parseInt(document.getElementById('r-dist').value)||0;
+  const vehicle=document.getElementById('r-vehicle').value;
+  if(!origin||!dest){ showToast('Informe origem e destino','warning'); return; }
+  const eff = Math.floor(Math.random()*20)+80;
+  DB.routes.push({id:++DB.nextId,origin,dest,dist,vehicle,status:'planejado',efficiency:eff});
+  addLog('ROUTES',`Nova rota criada: ${origin} → ${dest}`);
+  closeModal('modal-route');
+  renderRoutes();
+  showToast('Rota criada com sucesso','success');
+  document.getElementById('r-origin').value='';
+  document.getElementById('r-dest').value='';
+  document.getElementById('r-dist').value='';
+}
+
+// ============================================================
+// FLEET
+// ============================================================
+function renderFleet() {
+  const statusMap = {operando:{label:'Operando',bg:'rgba(16,185,129,0.12)',color:'#10b981'},disponível:{label:'Disponível',bg:'rgba(59,130,246,0.12)',color:'#60a5fa'},carregando:{label:'Carregando',bg:'rgba(245,158,11,0.12)',color:'#f59e0b'},manutenção:{label:'Manutenção',bg:'rgba(239,68,68,0.12)',color:'#ef4444'}};
+  const grid = document.getElementById('forklifts-grid');
+  grid.innerHTML = DB.forklifts.map(f=>{
+    const s = statusMap[f.status];
+    const battColor = f.battery<=20?'var(--red)':f.battery<=50?'var(--yellow)':'var(--green)';
+    return `<div class="forklift-card">
+      <div class="forklift-top">
+        <div>
+          <div class="forklift-id">🏗️ ${f.id}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${f.model}</div>
+        </div>
+        <div class="forklift-status" style="background:${s.bg};color:${s.color}">${s.label}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">📍 ${f.area}</div>
+      <div class="battery-bar"><div class="battery-fill" style="width:${f.battery}%;background:${battColor}"></div></div>
+      <div class="battery-val">🔋 ${f.battery}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// USERS
+// ============================================================
+function renderUsers() {
+  const roleMap = {admin:{label:'Admin',cls:'badge-red'},operador:{label:'Operador',cls:'badge-blue'},viewer:{label:'Visualizador',cls:'badge-purple'}};
+  const tbody = document.getElementById('users-table');
+  tbody.innerHTML = DB.users.map(u=>{
+    const r = roleMap[u.role];
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${u.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div><span style="font-weight:500">${u.name}</span></div></td>
+      <td style="color:var(--text2);font-size:13px">${u.email}</td>
+      <td><span class="badge ${r.cls}">${r.label}</span></td>
+      <td style="color:var(--text2);font-size:12px">${u.lastAccess}</td>
+      <td><span class="badge ${u.status==='ativo'?'badge-green':'badge-red'}">${u.status}</span></td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="deleteUser(${u.id})">Remover</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function addUser() {
+  const name=document.getElementById('u-name').value;
+  const email=document.getElementById('u-email').value;
+  const role=document.getElementById('u-role').value;
+  const pass=document.getElementById('u-pass').value;
+  if(!name||!email||!pass){ showToast('Preencha todos os campos','warning'); return; }
+  if(pass.length<8){ showToast('Senha deve ter ao menos 8 caracteres','warning'); return; }
+  DB.users.push({id:++DB.nextId,name,email,role,lastAccess:'Agora',status:'ativo'});
+  addLog('AUTH',`Usuário criado: ${name} (${role})`);
+  closeModal('modal-user');
+  renderUsers();
+  showToast('Usuário criado com sucesso','success');
+  ['u-name','u-email','u-pass'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteUser(id) {
+  if(id===1){ showToast('Não é possível remover o administrador principal','error'); return; }
+  const u = DB.users.find(x=>x.id===id);
+  DB.users = DB.users.filter(x=>x.id!==id);
+  addLog('AUTH',`Usuário removido: ${u?.name}`);
+  renderUsers();
+  showToast('Usuário removido','info');
+}
+
+// ============================================================
+// LOGS
+// ============================================================
+const logColors = {INFO:{bg:'rgba(59,130,246,0.12)',color:'#60a5fa'},WARN:{bg:'rgba(245,158,11,0.12)',color:'#f59e0b'},ERROR:{bg:'rgba(239,68,68,0.12)',color:'#ef4444'},WMS:{bg:'rgba(16,185,129,0.12)',color:'#10b981'},AUTH:{bg:'rgba(139,92,246,0.12)',color:'#a78bfa'},ROUTES:{bg:'rgba(59,130,246,0.12)',color:'#60a5fa'},EXPORT:{bg:'rgba(245,158,11,0.12)',color:'#f59e0b'}};
+
+function renderLogs() {
+  // Add some initial logs if empty
+  if(!DB.logs.length) {
+    addLog('AUTH','Sistema iniciado','INFO');
+    addLog('WMS','Inventário carregado: 8 produtos','INFO');
+    addLog('ROUTES','3 rotas ativas monitoradas','INFO');
+  }
+  const c = document.getElementById('logs-container');
+  c.innerHTML = DB.logs.map(l=>{
+    const lc = logColors[l.level]||logColors.INFO;
+    return `<div class="log-entry">
+      <span class="log-time">${l.ts}</span>
+      <span class="log-level" style="background:${lc.bg};color:${lc.color}">${l.level}</span>
+      <span class="log-msg">[${l.user}] ${l.action}: ${l.detail}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function renderNotifications() {
+  const typeMap = {warning:{icon:'⚠️',bg:'rgba(245,158,11,0.12)'},info:{icon:'ℹ️',bg:'rgba(59,130,246,0.12)'},success:{icon:'✅',bg:'rgba(16,185,129,0.12)'},error:{icon:'🚨',bg:'rgba(239,68,68,0.12)'}};
+  const list = document.getElementById('notif-list');
+  list.innerHTML = DB.notifications.map(n=>{
+    const t = typeMap[n.type];
+    return `<div class="notif-item">
+      <div class="notif-dot-icon" style="background:${t.bg}">${t.icon}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:2px">${n.title}</div>
+        <div style="font-size:12px;color:var(--text2)">${n.msg}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">${n.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// POPULATE SELECTS
+// ============================================================
+function populateSelects() {
+  const ep = document.getElementById('entry-product');
+  const xp = document.getElementById('exit-product');
+  const opts = DB.products.map(p=>`<option value="${p.id}">${p.name} (${p.sku})</option>`).join('');
+  ep.innerHTML = opts;
+  xp.innerHTML = opts;
+
+  const rv = document.getElementById('r-vehicle');
+  rv.innerHTML = DB.vehicles.map(v=>`<option value="${v.id}">${v.id}</option>`).join('');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open');}));
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type='info') {
+  const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(100px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(), 300); }, 3500);
+}
+
+// ============================================================
+// SIMULATED REAL-TIME UPDATE
+// ============================================================
+setInterval(()=>{
+  // Randomly update a vehicle status
+  const v = DB.vehicles[Math.floor(Math.random()*DB.vehicles.length)];
+  const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  v.updated = now;
+
+  // Random KPI flicker
+  const delta = (Math.random()-0.5)*2;
+  const effEl = document.getElementById('kpi-eff');
+  if(effEl) { const cur = parseFloat(effEl.textContent)||94; effEl.textContent=(cur+delta).toFixed(1)+'%'; }
+}, 8000);
+
+// ============================================================
+// INIT (auto-hide loader after slight delay)
+// ============================================================
+setTimeout(()=>{ document.getElementById('loader').style.display='none'; }, 800);
+</script>
+</body>
+</html>
